@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech-to-Text</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Upload Multiple Audio Files</h1>
+    <input type="file" id="audioFiles" multiple>
+    <button onclick="uploadFiles()">Transcribe</button>
+
+    <h2>Transcriptions:</h2>
+    <ul id="results"></ul>
+
+    <script>
+        async function uploadFiles() {
+            let fileInput = document.getElementById("audioFiles");
+            if (fileInput.files.length === 0) {
+                alert("Please select at least one file.");
+                return;
+            }
+
+            let formData = new FormData();
+            for (let file of fileInput.files) {
+                formData.append("files", file); // Match FastAPI parameter name
+            }
+
+            let response = await fetch("/transcribe/", {
+                method: "POST",
+                body: formData
+            });
+
+            let data = await response.json();
+            let resultList = document.getElementById("results");
+            resultList.innerHTML = ""; // Clear previous results
+
+            for (let [filename, transcription] of Object.entries(data.transcriptions)) {
+                let listItem = document.createElement("li");
+                listItem.innerHTML = `<strong>${filename}:</strong> ${transcription}`;
+                resultList.appendChild(listItem);
+            }
+        }
+    </script>
+</body>
+</html>
+
